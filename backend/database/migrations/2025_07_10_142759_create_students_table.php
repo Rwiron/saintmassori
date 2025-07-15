@@ -28,8 +28,8 @@ return new class extends Migration
             $table->string('parent_phone');
             $table->string('emergency_contact')->nullable();
 
-            // Academic Information
-            $table->foreignId('class_id')->nullable()->constrained()->nullOnDelete();
+            // Academic Information - Remove foreign key constraint for now
+            $table->unsignedBigInteger('class_id')->nullable();
             $table->date('enrollment_date');
             $table->enum('status', ['active', 'inactive', 'graduated', 'transferred'])->default('active');
 

@@ -68,6 +68,11 @@ class Term extends Model
                     ->where('end_date', '>=', now());
     }
 
+    public function scopeByAcademicYear($query, int $academicYearId)
+    {
+        return $query->where('academic_year_id', $academicYearId);
+    }
+
     // Accessors & Mutators
     public function getIsActiveAttribute(): bool
     {

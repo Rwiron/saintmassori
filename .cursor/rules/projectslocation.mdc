@@ -1,0 +1,61 @@
+---
+alwaysApply: true
+---
+# Project Structure and Location Guide
+
+## Overview
+This project is a **School Management System** with a clear separation between backend and frontend components.
+
+## Project Structure
+
+### Root Directory
+- **backend/**: Laravel 12 PHP backend API
+- **frontend/**: React.js frontend application  
+- **documentation/**: Project documentation
+- **cursor/**: Cursor IDE configuration and rules
+
+### Backend Structure (`backend/`)
+- **Technology**: Laravel 12 (PHP)
+- **Architecture**: Repository pattern with Services
+- **Key Directories**:
+  - `app/Http/Controllers/Api/`: API controllers
+  - `app/Models/`: Eloquent models
+  - `app/Services/`: Business logic services
+  - `app/Repositories/`: Data access layer
+  - `app/Enums/`: Application enums
+  - `database/migrations/`: Database schema
+  - `routes/api.php`: API routes
+  - `config/`: Configuration files
+
+### Frontend Structure (`frontend/`)
+- **Technology**: React.js with Vite
+- **Key Directories**:
+  - `src/`: React source code
+  - `public/`: Static assets
+  - `package.json`: Dependencies
+
+## Development Guidelines
+
+### When Working on Backend:
+- Always navigate to `backend/` directory
+- Use Laravel 12 conventions and documentation
+- Follow repository pattern for data access
+- Use services for business logic
+- API endpoints are in `routes/api.php`
+
+### When Working on Frontend:
+- Always navigate to `frontend/` directory
+- Use React best practices
+- Components should be in `src/`
+
+### Cross-Platform Development:
+- Backend serves API at `/api/*` endpoints
+- Frontend consumes backend API
+- Both can be developed independently
+
+## Important Notes
+- **Always check which directory you're in** before running commands
+- Backend uses Composer for PHP dependencies
+- Frontend uses npm/yarn for JavaScript dependencies
+- Database migrations are in `backend/database/migrations/`
+- API documentation is in `backend/API_DOCUMENTATION.md`

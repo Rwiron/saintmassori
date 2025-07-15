@@ -3,10 +3,129 @@
 ## 📋 Project Overview
 - **Project**: Montessori School Management System (Phase 1: Admin & Student Focus)
 - **Backend**: Laravel 12.x (API-first approach)
-- **Frontend**: React with Vite
+- **Frontend**: React with Vite + Shadcn/UI
 - **Database**: MySQL/PostgreSQL
 - **Authentication**: Laravel Sanctum
+- **UI Components**: Shadcn/UI with Tailwind CSS
 - **Documentation Reference**: https://laravel.com/docs/12.x/
+
+---
+
+## 🎨 Frontend UI Rules (Shadcn/UI + Tailwind CSS)
+
+### 1. **Shadcn/UI Component System**
+- **MUST use Shadcn/UI components** for all UI elements
+- **MUST follow Shadcn/UI documentation**: https://ui.shadcn.com/
+- **MUST use Tailwind CSS** for styling and customization
+- **MUST maintain consistent design system** across all components
+
+### 2. **Component Structure**
+```jsx
+// Use Shadcn/UI components as base
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+// Example component structure
+export function StudentForm() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Student</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form className="space-y-4">
+          <Input placeholder="Student Name" />
+          <Button type="submit">Save Student</Button>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+### 3. **Styling Guidelines**
+- **MUST use Tailwind utility classes** for styling
+- **MUST follow consistent spacing** using Tailwind's spacing scale
+- **MUST use CSS variables** for theme customization
+- **MUST implement responsive design** using Tailwind's responsive prefixes
+
+### 4. **Theme Configuration**
+```css
+/* Use CSS variables for theme consistency */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 142 76% 36%;
+  --primary-foreground: 355.7 100% 97.3%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  /* ... other theme variables */
+}
+```
+
+### 5. **Component Customization**
+- **MUST extend Shadcn/UI components** rather than creating from scratch
+- **MUST use className prop** for additional styling
+- **MUST maintain accessibility** features provided by Shadcn/UI
+- **MUST follow Shadcn/UI patterns** for component composition
+
+### 6. **Required Shadcn/UI Components**
+**MUST use these components for the admin panel:**
+- `Button` - for all interactive actions
+- `Input` - for form inputs
+- `Card` - for content containers
+- `Sidebar` - for navigation
+- `DropdownMenu` - for user menus and actions
+- `Avatar` - for user profile images
+- `Badge` - for status indicators
+- `Table` - for data display
+- `Dialog` - for modals and confirmations
+- `Form` - for form handling with validation
+- `Separator` - for visual separation
+- `Skeleton` - for loading states
+
+### 7. **Installation and Setup**
+```bash
+# Install Shadcn/UI components as needed
+npx shadcn-ui@latest add button
+npx shadcn-ui@latest add input
+npx shadcn-ui@latest add card
+npx shadcn-ui@latest add sidebar
+# ... other components
+```
+
+### 8. **Dropdown & Modal Styling Rules**
+- **MUST use opaque white backgrounds** for all dropdown components
+- **MUST NOT use transparent backgrounds** for dropdown menus
+- **MUST use proper contrast colors** for dropdown text and backgrounds
+
+```jsx
+// Correct dropdown styling - ALWAYS use opaque white
+<SelectContent className="bg-white text-gray-950">
+  <SelectItem value="option1">Option 1</SelectItem>
+</SelectContent>
+
+<DropdownMenuContent className="bg-white text-gray-900">
+  <DropdownMenuItem className="focus:bg-gray-100 focus:text-gray-900">
+    Action Item
+  </DropdownMenuItem>
+</DropdownMenuContent>
+```
+
+**Required Dropdown Styling:**
+- **Background**: `bg-white` (opaque white)
+- **Text**: `text-gray-900` or `text-gray-950` (high contrast)
+- **Focus states**: `focus:bg-gray-100 focus:text-gray-900`
+- **Borders**: `border-gray-200` for subtle separation
+- **Shadows**: `shadow-md` or `shadow-lg` for depth
+- **Destructive actions**: `text-red-600` with `focus:bg-red-50`
+
+### 9. **Mobile Responsiveness**
+- **MUST implement mobile-first design** using Tailwind breakpoints
+- **MUST ensure touch-friendly interactions** (minimum 44px touch targets)
+- **MUST adapt layouts** for different screen sizes
+- **MUST test on mobile devices** before deployment
 
 ---
 
@@ -422,9 +541,9 @@ php artisan make:request StoreStudentRequest
 
 ---
 
-## ✅ Laravel 12.x Compliance Checklist
+## ✅ Development Compliance Checklist
 
-### For Each Feature:
+### For Each Backend Feature (Laravel 12.x):
 - [ ] Follows Laravel 12.x documentation patterns
 - [ ] Uses appropriate Laravel 12.x features
 - [ ] Implements proper error handling
@@ -435,6 +554,18 @@ php artisan make:request StoreStudentRequest
 - [ ] Follows Laravel naming conventions
 - [ ] Uses Laravel's built-in validation
 - [ ] Implements proper API resources
+
+### For Each Frontend Feature (React + Shadcn/UI):
+- [ ] Uses Shadcn/UI components as base
+- [ ] Follows Shadcn/UI documentation patterns
+- [ ] Implements responsive design (mobile-first)
+- [ ] Uses Tailwind CSS for styling
+- [ ] Maintains consistent theme variables
+- [ ] Ensures accessibility compliance
+- [ ] Implements proper loading states
+- [ ] Uses proper component composition
+- [ ] Follows React best practices
+- [ ] Tests on multiple screen sizes
 
 ---
 

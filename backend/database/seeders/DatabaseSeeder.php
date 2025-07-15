@@ -19,5 +19,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed grades, classes, and tariffs
+        $this->call([
+            GradeSeeder::class,
+            TariffSeeder::class,
+        ]);
     }
 }

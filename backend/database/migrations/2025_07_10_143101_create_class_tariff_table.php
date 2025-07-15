@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('class_tariff', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('class_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('tariff_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('class_id');
+            $table->unsignedBigInteger('tariff_id');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
