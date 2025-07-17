@@ -7,12 +7,68 @@ namespace App\Http\Controllers\Api;
 use App\Services\BillingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BillingController extends BaseApiController
 {
     public function __construct(
         private readonly BillingService $billingService
     ) {}
+
+    /**
+     * Get all bills with optional filtering
+     */
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $filters = $request->only(['status', 'class_id', 'search', 'academic_year_id', 'term_id']);
+            $bills = $this->billingService->getAllBills($filters);
+
+            return $this->successResponse($bills, 'Bills retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    /**
+     * Get bill items for a specific bill
+     */
+    public function getBillItems(int $billId): JsonResponse
+    {
+        try {
+            $billItems = $this->billingService->getBillItems($billId);
+            return $this->successResponse($billItems, 'Bill items retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    /**
+     * Record payment for a specific bill item
+     */
+    public function recordBillItemPayment(Request $request, int $billItemId): JsonResponse
+    {
+        try {
+            $request->validate([
+                'amount' => 'required|numeric|min:0.01',
+                'payment_method' => 'required|string|in:cash,bank_transfer,mobile_money,card,cheque',
+                'reference' => 'nullable|string|max:255',
+                'notes' => 'nullable|string|max:1000',
+            ]);
+
+            $billItem = $this->billingService->recordBillItemPayment(
+                $billItemId,
+                $request->amount,
+                $request->payment_method,
+                $request->reference,
+                $request->notes
+            );
+
+            return $this->successResponse($billItem, 'Payment recorded successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
 
     /**
      * Generate bill for a student
@@ -169,6 +225,58 @@ class BillingController extends BaseApiController
             return $this->successResponse([
                 'marked_overdue' => $count
             ], 'Overdue bills marked successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    /**
+     * Get optimized payment overview data for all classes
+     */
+    public function getPaymentOverview(): JsonResponse
+    {
+        try {
+            $overview = $this->billingService->getPaymentOverview();
+            return $this->successResponse($overview, 'Payment overview retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    /**
+     * Get optimized payment data for a specific class
+     */
+    public function getClassPaymentDetails(int $classId): JsonResponse
+    {
+        try {
+            $details = $this->billingService->getClassPaymentDetails($classId);
+            return $this->successResponse($details, 'Class payment details retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    /**
+     * Get all tariffs assigned to a specific class
+     */
+    public function getClassTariffs(int $classId): JsonResponse
+    {
+        try {
+            $tariffs = $this->billingService->getClassTariffs($classId);
+            return $this->successResponse($tariffs, 'Class tariffs retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->handleException($e);
+        }
+    }
+
+    /**
+     * Get student payment progress for a specific tariff in a class
+     */
+    public function getStudentPaymentProgressByTariff(int $classId, int $tariffId): JsonResponse
+    {
+        try {
+            $progress = $this->billingService->getStudentPaymentProgressByTariff($classId, $tariffId);
+            return $this->successResponse($progress, 'Student payment progress retrieved successfully');
         } catch (\Exception $e) {
             return $this->handleException($e);
         }

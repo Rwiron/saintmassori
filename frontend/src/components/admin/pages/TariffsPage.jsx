@@ -21,6 +21,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import ClassCard from '@/components/admin/ClassCard';
 import TariffModal from '@/components/admin/modals/TariffModal';
 import TariffDetailsModal from '@/components/admin/modals/TariffDetailsModal';
+import AssignTariffModal from '@/components/admin/modals/AssignTariffModal';
 import tariffService from '@/services/tariffService';
 import classService from '@/services/classService';
 import toast from '@/utils/toast';
@@ -45,6 +46,7 @@ const TariffsPage = () => {
   // Modal states
   const [showTariffModal, setShowTariffModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedTariff, setSelectedTariff] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
   const [targetClassId, setTargetClassId] = useState(null);
@@ -53,18 +55,11 @@ const TariffsPage = () => {
 
   useEffect(() => {
     loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (currentPage === 1) {
-      loadInitialData();
-    }
   }, [searchTerm, statusFilter]);
 
   const loadInitialData = async () => {
     setLoading(true);
     setCurrentPage(1);
-    setHasMore(true);
     try {
       await Promise.all([
         loadClassesData(1, true),
@@ -81,23 +76,18 @@ const TariffsPage = () => {
 
   const loadClassesData = async (page = 1, reset = false) => {
     try {
-      const params = {
-        page,
-        limit: ITEMS_PER_PAGE,
-        search: searchTerm,
-        status: statusFilter
-      };
-      
-      // Use the new endpoint that includes tariff counts
+      // Since getClassesWithTariffCounts returns all classes, we don't need pagination parameters
       const response = await classService.getClassesWithTariffCounts();
       const classes = response.data || [];
       
-      if (reset) {
+      if (reset || page === 1) {
+        // For initial load or reset, replace all data
         setGradeGroups(groupClassesByGrade(classes));
-        setHasMore(classes.length === ITEMS_PER_PAGE);
+        setHasMore(false); // No more pages since we load all classes at once
       } else {
+        // This branch shouldn't be reached since we load all classes at once
         setGradeGroups(prev => mergeGradeGroups(prev, groupClassesByGrade(classes)));
-        setHasMore(classes.length === ITEMS_PER_PAGE);
+        setHasMore(false);
       }
       
       setCurrentPage(page);
@@ -175,7 +165,12 @@ const TariffsPage = () => {
     newGroups.forEach(newGroup => {
       const existingIndex = merged.findIndex(g => g.gradeName === newGroup.gradeName);
       if (existingIndex >= 0) {
-        merged[existingIndex].classes = [...merged[existingIndex].classes, ...newGroup.classes];
+        // Merge classes but avoid duplicates
+        const existingClasses = merged[existingIndex].classes;
+        const newClasses = newGroup.classes.filter(newClass => 
+          !existingClasses.some(existingClass => existingClass.id === newClass.id)
+        );
+        merged[existingIndex].classes = [...existingClasses, ...newClasses];
       } else {
         merged.push(newGroup);
       }
@@ -198,20 +193,21 @@ const TariffsPage = () => {
     }
   }, [currentPage, loadingMore, hasMore, searchTerm, statusFilter]);
 
-  // Infinite scroll handler
+  // Infinite scroll handler - disabled since we load all classes at once
   useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 1000
-      ) {
-        loadMore();
-      }
-    };
+    // Commented out infinite scroll since we load all classes at once
+    // const handleScroll = () => {
+    //   if (
+    //     window.innerHeight + document.documentElement.scrollTop >=
+    //     document.documentElement.offsetHeight - 1000
+    //   ) {
+    //     loadMore();
+    //   }
+    // };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadMore]);
+    // window.addEventListener('scroll', handleScroll);
+    // return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleGradeExpansion = (gradeName) => {
     setExpandedGrades(prev => ({
@@ -235,6 +231,17 @@ const TariffsPage = () => {
     setSelectedTariff(tariff);
     setTargetClassId(null);
     setShowTariffModal(true);
+  };
+
+  const handleAssignTariffs = (classId) => {
+    const classData = gradeGroups
+      .flatMap(grade => grade.classes)
+      .find(cls => cls.id === classId);
+    
+    if (classData) {
+      setSelectedClass(classData);
+      setShowAssignModal(true);
+    }
   };
 
   const handleTariffSubmit = async (tariffData) => {
@@ -473,7 +480,19 @@ const TariffsPage = () => {
         className={selectedClass?.name}
         onEditTariff={handleEditTariff}
         onCreateTariff={handleCreateTariff}
+        onAssignTariffs={handleAssignTariffs}
         refreshData={loadInitialData}
+      />
+
+      <AssignTariffModal
+        isOpen={showAssignModal}
+        onClose={() => {
+          setShowAssignModal(false);
+          setSelectedClass(null);
+        }}
+        classId={selectedClass?.id}
+        className={selectedClass?.full_name || selectedClass?.name}
+        onAssignComplete={loadInitialData}
       />
     </div>
   );

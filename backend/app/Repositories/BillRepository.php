@@ -17,6 +17,47 @@ class BillRepository extends BaseRepository
         parent::__construct($model);
     }
 
+    /**
+     * Get all bills with optional filtering
+     */
+    public function getAll(array $filters = []): Collection
+    {
+        $query = $this->model->with(['student.class.grade', 'academicYear', 'term']);
+
+        // Apply filters
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['class_id'])) {
+            $query->whereHas('student', function ($q) use ($filters) {
+                $q->where('class_id', $filters['class_id']);
+            });
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('bill_number', 'like', "%{$search}%")
+                  ->orWhereHas('student', function ($studentQuery) use ($search) {
+                      $studentQuery->where('first_name', 'like', "%{$search}%")
+                                   ->orWhere('last_name', 'like', "%{$search}%")
+                                   ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                  });
+            });
+        }
+
+        if (!empty($filters['academic_year_id'])) {
+            $query->where('academic_year_id', $filters['academic_year_id']);
+        }
+
+        if (!empty($filters['term_id'])) {
+            $query->where('term_id', $filters['term_id']);
+        }
+
+        return $query->orderBy('created_at', 'desc')->get();
+    }
+
     public function getPending(): Collection
     {
         return $this->model->pending()->get();

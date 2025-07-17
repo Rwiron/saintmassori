@@ -40,7 +40,7 @@ class StudentRepository extends BaseRepository
 
     public function getByClass(int $classId): Collection
     {
-        return $this->model->byClass($classId)->get();
+        return $this->model->byClass($classId)->with('class.grade')->get();
     }
 
     public function getByGrade(int $gradeId): Collection

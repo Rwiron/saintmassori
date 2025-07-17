@@ -12,6 +12,10 @@ import ClassesPage from './components/admin/pages/ClassesPage'
 import GradesPage from './components/admin/pages/GradesPage'
 import { StudentsPage } from './components/admin/pages/StudentsPage'
 import TariffsPage from './components/admin/pages/TariffsPage'
+import BillingPage from './components/admin/pages/BillingPage'
+import PaymentsPage from './components/admin/pages/PaymentsPage'
+import ClassTariffReportsPage from './components/admin/pages/ClassTariffReportsPage'
+import UserManagementPage from './components/admin/pages/UserManagementPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { Toaster } from 'react-hot-toast'
 
@@ -50,12 +54,15 @@ function App() {
           
           {/* Financial Management */}
           <Route path="tariffs" element={<TariffsPage />} />
-          <Route path="billing" element={<div className="p-6"><h1 className="text-2xl font-bold">Billing Management</h1><p className="text-muted-foreground">Generate and manage student bills and invoices.</p></div>} />
-          <Route path="payments" element={<div className="p-6"><h1 className="text-2xl font-bold">Payments</h1><p className="text-muted-foreground">Track and process student payments.</p></div>} />
-          <Route path="financial-reports" element={<div className="p-6"><h1 className="text-2xl font-bold">Financial Reports</h1><p className="text-muted-foreground">View detailed financial reports and analytics.</p></div>} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          
+          {/* Reports */}
+          <Route path="reports/class-tariff" element={<ClassTariffReportsPage />} />
+          <Route path="reports/financial" element={<div className="p-6"><h1 className="text-2xl font-bold">Financial Reports</h1><p className="text-muted-foreground">View detailed financial reports and analytics.</p></div>} />
           
           {/* Administration */}
-          <Route path="users" element={<div className="p-6"><h1 className="text-2xl font-bold">User Management</h1><p className="text-muted-foreground">Manage system users and permissions.</p></div>} />
+          <Route path="users" element={<UserManagementPage />} />
           <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold">System Settings</h1><p className="text-muted-foreground">Configure system settings and preferences.</p></div>} />
           <Route path="notifications" element={<div className="p-6"><h1 className="text-2xl font-bold">Notifications</h1><p className="text-muted-foreground">Manage system notifications and alerts.</p></div>} />
           

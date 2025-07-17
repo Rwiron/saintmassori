@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { 
@@ -16,7 +18,8 @@ import {
   Car,
   Utensils,
   Settings,
-  Target
+  Target,
+  Search
 } from 'lucide-react';
 import tariffService from '@/services/tariffService';
 import toast from '@/utils/toast';
@@ -33,8 +36,10 @@ const TariffDetailsModal = ({
 }) => {
   const [classData, setClassData] = useState(null);
   const [tariffs, setTariffs] = useState([]);
+  const [filteredTariffs, setFilteredTariffs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (isOpen && classId) {
@@ -42,12 +47,27 @@ const TariffDetailsModal = ({
     }
   }, [isOpen, classId]);
 
+  useEffect(() => {
+    // Filter tariffs based on search term
+    if (searchTerm.trim() === '') {
+      setFilteredTariffs(tariffs);
+    } else {
+      const filtered = tariffs.filter(tariff =>
+        tariff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tariff.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        formatTariffType(tariff.type).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredTariffs(filtered);
+    }
+  }, [searchTerm, tariffs]);
+
   const loadClassTariffs = async () => {
     setLoading(true);
     try {
       const response = await tariffService.getClassTariffs(classId);
       setClassData(response.class);
       setTariffs(response.tariffs || []);
+      setFilteredTariffs(response.tariffs || []);
       setTotalAmount(response.total_amount || 0);
     } catch (error) {
       console.error('Error loading class tariffs:', error);
@@ -162,7 +182,7 @@ const TariffDetailsModal = ({
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 onClick={() => onCreateTariff?.(classId)}
                 className="flex items-center gap-2"
@@ -182,99 +202,124 @@ const TariffDetailsModal = ({
 
             <Separator />
 
-            {/* Tariffs List */}
+            {/* Search Input */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Tariffs ({tariffs.length})</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-gray-900">
+                  Tariffs ({filteredTariffs.length}{searchTerm && ` of ${tariffs.length}`})
+                </h4>
+                {searchTerm && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSearchTerm('')}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Clear search
+                  </Button>
+                )}
+              </div>
               
-              {tariffs.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <BookOpen className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>No tariffs assigned to this class</p>
-                  <p className="text-sm">Click "Add New Tariff" to get started</p>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search tariffs by name, type, or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Tariffs Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTariffs.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  {searchTerm ? (
+                    <>
+                      <p className="text-gray-500 mb-2">No tariffs found matching "{searchTerm}"</p>
+                      <p className="text-sm text-gray-400">Try a different search term or clear the search</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-500 mb-2">No tariffs assigned to this class</p>
+                      <p className="text-sm text-gray-400">Click "Add New Tariff" or "Assign Existing Tariffs" to get started</p>
+                    </>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {tariffs.map((tariff) => (
-                    <div 
-                      key={tariff.id} 
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${getTariffTypeColor(tariff.type)}`}>
-                          {getTariffTypeIcon(tariff.type)}
-                        </div>
-                        <div>
-                          <h5 className="font-medium text-gray-900">{tariff.name}</h5>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Badge variant="outline" className="text-xs">
-                              {formatTariffType(tariff.type)}
-                            </Badge>
-                            <span>•</span>
-                            <span>{formatFrequency(tariff.billing_frequency)}</span>
-                            {tariff.description && (
-                              <>
-                                <span>•</span>
-                                <span>{tariff.description}</span>
-                              </>
-                            )}
+                filteredTariffs.map((tariff) => (
+                  <Card key={tariff.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      {/* Tariff Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded-md ${getTariffTypeColor(tariff.type)}`}>
+                            {getTariffTypeIcon(tariff.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-medium text-gray-900 truncate">{tariff.name}</h5>
+                            <p className="text-xs text-gray-500 truncate">{tariff.description}</p>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900">{formatAmount(tariff.amount)}</p>
-                          <Badge variant={tariff.is_active ? 'default' : 'secondary'} className="text-xs">
-                            {tariff.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
-                        
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="w-4 h-4" />
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-white">
-                            <DropdownMenuItem 
-                              onClick={() => onEditTariff?.(tariff)}
-                              className="flex items-center gap-2 text-gray-700 hover:bg-gray-100"
-                            >
-                              <Edit className="w-4 h-4" />
-                              Edit Tariff
+                            <DropdownMenuItem onClick={() => onEditTariff?.(tariff)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleRemoveTariff(tariff.id)}
-                              className="flex items-center gap-2 text-red-600 hover:bg-red-50"
+                              className="text-red-600 hover:text-red-700"
                             >
-                              <Trash2 className="w-4 h-4" />
-                              Remove from Class
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Remove
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                    </div>
-                  ))}
-                </div>
+
+                      {/* Tariff Details */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className="text-xs">
+                            {formatTariffType(tariff.type)}
+                          </Badge>
+                          <Badge variant={tariff.is_active ? "default" : "secondary"} className="text-xs">
+                            {tariff.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">{formatFrequency(tariff.billing_frequency)}</span>
+                          <span className="text-lg font-semibold text-gray-900">{formatAmount(tariff.amount)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
               )}
             </div>
 
-            {/* Total Amount */}
-            {tariffs.length > 0 && (
-              <>
-                <Separator />
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-blue-900">Total per term</span>
-                    </div>
-                    <span className="text-xl font-bold text-blue-900">
-                      {formatAmount(totalAmount)}
-                    </span>
+            {/* Total Summary */}
+            {filteredTariffs.length > 0 && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-blue-600" />
+                    <span className="font-medium text-blue-900">Total per term</span>
                   </div>
+                  <span className="text-xl font-bold text-blue-900">
+                    {formatAmount(filteredTariffs.reduce((sum, tariff) => sum + parseFloat(tariff.amount), 0))}
+                  </span>
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}

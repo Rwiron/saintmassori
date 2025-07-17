@@ -112,11 +112,22 @@ const navMain = [
         url: "/admin/payments",
         icon: DollarSign,
       },
+    ],
+  },
+  {
+    title: "Reports",
+    icon: BarChart3,
+    items: [
       {
-        title: "Reports",
-        url: "/admin/financial-reports",
+        title: "Class Tariff Reports",
+        url: "/admin/reports/class-tariff",
         icon: BarChart3,
       },
+      // {
+      //   title: "Financial Reports",
+      //   url: "/admin/reports/financial",
+      //   icon: DollarSign,
+      // },
     ],
   },
   {

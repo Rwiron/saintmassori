@@ -8,6 +8,7 @@ use App\Services\ClassService;
 use App\Services\TariffService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ClassController extends BaseApiController
 {
@@ -33,9 +34,11 @@ class ClassController extends BaseApiController
                     return $this->errorResponse('Invalid grade ID provided', 400);
                 }
                 $classes = $this->classService->getClassesByGrade((int) $gradeId);
-            } else {
+                        } else {
                 $classes = $this->classService->getActiveClasses();
             }
+
+
 
             return $this->successResponse($classes, 'Classes retrieved successfully');
         } catch (\Exception $e) {

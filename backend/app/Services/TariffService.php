@@ -217,8 +217,18 @@ class TariffService
         $class = $this->classRepository->findOrFail($classId);
         $tariffs = $this->classRepository->getClassTariffs($classId);
 
+        // Load the class with additional relationships and counts
+        $classWithCounts = \App\Models\ClassModel::with('grade')
+            ->withCount([
+                'students',
+                'students as active_students_count' => function ($query) {
+                    $query->where('status', 'active');
+                }
+            ])
+            ->find($classId);
+
         return [
-            'class' => $class->load('grade'),
+            'class' => $classWithCounts,
             'tariffs' => $tariffs,
             'total_amount' => $tariffs->sum('amount'),
             'active_tariffs_count' => $tariffs->where('is_active', true)->count(),

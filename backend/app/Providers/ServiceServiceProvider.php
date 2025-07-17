@@ -12,6 +12,7 @@ use App\Services\ClassService;
 use App\Services\TariffService;
 use App\Services\TermService;
 use App\Services\GradeService;
+use App\Services\UserService;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceServiceProvider extends ServiceProvider
@@ -30,6 +31,7 @@ class ServiceServiceProvider extends ServiceProvider
         TariffService::class => TariffService::class,
         TermService::class => TermService::class,
         GradeService::class => GradeService::class,
+        UserService::class => UserService::class,
     ];
 
     /**

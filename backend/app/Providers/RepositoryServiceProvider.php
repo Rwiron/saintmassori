@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Models\AcademicYear;
 use App\Models\Bill;
+use App\Models\BillItem;
 use App\Models\ClassModel;
 use App\Models\Grade;
 use App\Models\Student;
@@ -13,6 +14,7 @@ use App\Models\Tariff;
 use App\Models\Term;
 use App\Repositories\AcademicYearRepository;
 use App\Repositories\BillRepository;
+use App\Repositories\BillItemRepository;
 use App\Repositories\ClassRepository;
 use App\Repositories\GradeRepository;
 use App\Repositories\StudentRepository;
@@ -33,6 +35,10 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->bind(BillRepository::class, function ($app) {
             return new BillRepository($app->make(Bill::class));
+        });
+
+        $this->app->bind(BillItemRepository::class, function ($app) {
+            return new BillItemRepository($app->make(BillItem::class));
         });
 
         $this->app->bind(ClassRepository::class, function ($app) {

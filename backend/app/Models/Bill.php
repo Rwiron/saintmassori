@@ -8,6 +8,7 @@ use App\Enums\BillStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bill extends Model
@@ -66,6 +67,11 @@ class Bill extends Model
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
+    }
+
+    public function billItems(): HasMany
+    {
+        return $this->hasMany(BillItem::class);
     }
 
     // Scopes

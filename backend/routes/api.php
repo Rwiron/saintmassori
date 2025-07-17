@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TariffController;
 use App\Http\Controllers\Api\TermController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -136,6 +137,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Billing Routes
     Route::prefix('billing')->group(function () {
+        Route::get('/bills', [BillingController::class, 'index']);
+        Route::get('/bills/{billId}/items', [BillingController::class, 'getBillItems']);
+        Route::post('/bill-items/{billItemId}/payment', [BillingController::class, 'recordBillItemPayment']);
         Route::post('/generate/student/{studentId}', [BillingController::class, 'generateForStudent']);
         Route::post('/generate/class/{classId}', [BillingController::class, 'generateForClass']);
         Route::post('/generate/grade/{gradeId}', [BillingController::class, 'generateForGrade']);
@@ -143,9 +147,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/bills/{billId}/cancel', [BillingController::class, 'cancelBill']);
         Route::get('/students/{studentId}/bills', [BillingController::class, 'studentBills']);
         Route::get('/students/{studentId}/balance', [BillingController::class, 'studentBalance']);
-        Route::get('/summary/{academicYearId}', [BillingController::class, 'summary']);
-        Route::get('/revenue-report/{academicYearId}', [BillingController::class, 'revenueReport']);
-        Route::post('/mark-overdue', [BillingController::class, 'markOverdue']);
+        Route::get('/summary/{academicYearId}', [BillingController::class, 'getBillingSummary']);
+        Route::get('/revenue/{academicYearId}', [BillingController::class, 'getRevenueReport']);
+        Route::get('/payment-overview', [BillingController::class, 'getPaymentOverview']);
+        Route::get('/class/{classId}/payment-details', [BillingController::class, 'getClassPaymentDetails']);
+        Route::get('/class/{classId}/tariffs', [BillingController::class, 'getClassTariffs']);
+        Route::get('/class/{classId}/tariff/{tariffId}/student-progress', [BillingController::class, 'getStudentPaymentProgressByTariff']);
     });
 
     // Tariff Routes
@@ -172,6 +179,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/validate', [StudentImportController::class, 'validateFile']);
         Route::post('/import', [StudentImportController::class, 'importStudents']);
         Route::get('/history', [StudentImportController::class, 'getImportHistory']);
+    });
+
+    // User Management Routes
+    Route::prefix('users')->group(function () {
+        Route::get('/statistics', [UserController::class, 'statistics']);
+        Route::get('/roles', [UserController::class, 'roles']);
+        Route::post('/bulk-action', [UserController::class, 'bulkAction']);
+        Route::post('/{user}/activate', [UserController::class, 'activate']);
+        Route::post('/{user}/deactivate', [UserController::class, 'deactivate']);
+        Route::get('/', [UserController::class, 'index']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::get('/{user}', [UserController::class, 'show']);
+        Route::put('/{user}', [UserController::class, 'update']);
+        Route::delete('/{user}', [UserController::class, 'destroy']);
     });
 
 });

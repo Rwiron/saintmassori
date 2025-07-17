@@ -22,7 +22,12 @@ class ClassRepository extends BaseRepository
 
     public function getWithGrade(): Collection
     {
-        return $this->model->with('grade')->get();
+        return $this->model
+            ->with(['grade'])
+            ->withCount(['students', 'students as active_students_count' => function ($query) {
+                $query->where('status', 'active');
+            }])
+            ->get();
     }
 
     public function getWithGradeAndTariffCounts(): Collection

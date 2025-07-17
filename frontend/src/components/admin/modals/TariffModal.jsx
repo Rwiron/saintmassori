@@ -47,6 +47,9 @@ const TariffModal = ({
   const [showClassAssignment, setShowClassAssignment] = useState(false);
   const [selectedClasses, setSelectedClasses] = useState([]);
 
+  // Determine mode based on whether we're editing or creating
+  const mode = tariff ? 'edit' : 'create';
+
   // Load data when modal opens
   useEffect(() => {
     if (isOpen) {

@@ -51,7 +51,7 @@ const tariffService = {
 
   // Assign tariffs to a class
   assignTariffsToClass: async (classId, tariffIds) => {
-    const response = await apiClient.post(`/classes/${classId}/tariffs/assign`, {
+    const response = await apiClient.post(`/classes/${classId}/assign-tariffs`, {
       tariff_ids: tariffIds
     });
     return response.data;
@@ -120,6 +120,127 @@ const tariffService = {
       'one_time': 'One Time'
     };
     return frequencyMap[frequency] || frequency;
+  },
+
+  // Calculate projected revenue based on tariff and student count
+  calculateProjectedRevenue: (tariff, studentCount) => {
+    if (!tariff.amount || !tariff.billing_frequency || !studentCount) {
+      return null;
+    }
+
+    const amount = parseFloat(tariff.amount);
+    const totalStudents = parseInt(studentCount);
+    
+    if (isNaN(amount) || isNaN(totalStudents) || amount <= 0 || totalStudents <= 0) {
+      return null;
+    }
+
+    let perTerm = 0;
+    let perYear = 0;
+
+    switch (tariff.billing_frequency) {
+      case 'per_term':
+        perTerm = amount * totalStudents;
+        perYear = perTerm * 3; // Assuming 3 terms per year
+        break;
+      case 'per_month':
+        perTerm = amount * totalStudents * 4; // Assuming 4 months per term
+        perYear = amount * totalStudents * 12;
+        break;
+      case 'per_year':
+        perTerm = (amount * totalStudents) / 3; // Divide by 3 terms
+        perYear = amount * totalStudents;
+        break;
+      case 'one_time':
+        perTerm = amount * totalStudents;
+        perYear = amount * totalStudents;
+        break;
+      default:
+        return null;
+    }
+
+    return {
+      per_term: perTerm,
+      per_year: perYear,
+      total_projected: perYear,
+      student_count: totalStudents,
+      amount_per_student: amount,
+      billing_frequency: tariff.billing_frequency
+    };
+  },
+
+  // Validate tariff data
+  validateTariffData: (data) => {
+    const errors = {};
+    let isValid = true;
+
+    // Validate name
+    if (!data.name || data.name.trim().length === 0) {
+      errors.name = 'Tariff name is required';
+      isValid = false;
+    } else if (data.name.trim().length < 2) {
+      errors.name = 'Tariff name must be at least 2 characters long';
+      isValid = false;
+    } else if (data.name.trim().length > 255) {
+      errors.name = 'Tariff name must not exceed 255 characters';
+      isValid = false;
+    }
+
+    // Validate type
+    if (!data.type || data.type.trim().length === 0) {
+      errors.type = 'Tariff type is required';
+      isValid = false;
+    } else {
+      const validTypes = ['tuition', 'activity_fee', 'transport', 'meal', 'other'];
+      if (!validTypes.includes(data.type)) {
+        errors.type = 'Invalid tariff type';
+        isValid = false;
+      }
+    }
+
+    // Validate amount
+    if (!data.amount || data.amount === '') {
+      errors.amount = 'Amount is required';
+      isValid = false;
+    } else {
+      const amount = parseFloat(data.amount);
+      if (isNaN(amount) || amount <= 0) {
+        errors.amount = 'Amount must be a positive number';
+        isValid = false;
+      } else if (amount > 10000000) { // 10 million RWF limit
+        errors.amount = 'Amount cannot exceed 10,000,000 RWF';
+        isValid = false;
+      }
+    }
+
+    // Validate billing frequency
+    if (!data.billing_frequency || data.billing_frequency.trim().length === 0) {
+      errors.billing_frequency = 'Billing frequency is required';
+      isValid = false;
+    } else {
+      const validFrequencies = ['per_term', 'per_month', 'per_year', 'one_time'];
+      if (!validFrequencies.includes(data.billing_frequency)) {
+        errors.billing_frequency = 'Invalid billing frequency';
+        isValid = false;
+      }
+    }
+
+    // Validate description (optional but if provided, check length)
+    if (data.description && data.description.trim().length > 1000) {
+      errors.description = 'Description must not exceed 1000 characters';
+      isValid = false;
+    }
+
+    // Validate class assignment (at least one class should be selected if not editing)
+    if (data.class_ids && Array.isArray(data.class_ids) && data.class_ids.length === 0) {
+      errors.class_ids = 'At least one class must be selected';
+      isValid = false;
+    }
+
+    return {
+      isValid,
+      errors
+    };
   }
 };
 
